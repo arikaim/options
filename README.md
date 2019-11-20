@@ -3,7 +3,7 @@
 ![license: GPL3](https://img.shields.io/badge/License-GPLv3-blue.svg)
    
 Persistent key-value map with storage adapters:
-    * Eloquent ORM adapter
+ * Eloquent ORM adapter
   
 
 ### Requirements 
