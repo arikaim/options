@@ -75,5 +75,5 @@ interface OptionsInterface
      *
      * @return array
     */
-    public function load();
+    public function loadOptions();
 }

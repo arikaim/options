@@ -119,10 +119,14 @@ class Options extends Model implements OptionsInterface
             'auto_load' => ($autoLoad == true) ? 1 : 0,      
             'extension' => $extension
         ];
-    
+        
         try {
-            $model = $this->where('key','=',$key)->first();  
-            $result = (is_object($model) == true) ? $model->update($data) : $this->create($data);             
+            if ($this->hasOption($key) == true) {
+                $result = $this->where('key','=',$key)->update($data);
+            } else {
+                $result = $this->create($data);
+            }
+                  
         } catch(\Exception $e) {
             return false;
         }
@@ -135,7 +139,7 @@ class Options extends Model implements OptionsInterface
      *
      * @return Model
      */
-    public function load()
+    public function loadOptions()
     {        
         try {
             $model = $this->where('auto_load','=','1')->select('key','value')->get();

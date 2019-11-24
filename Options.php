@@ -63,7 +63,7 @@ class Options extends Collection
     {
         $options = is_object($this->cache) ? $this->cache->fetch('options') : null;
         if (is_array($options) == false) {        
-            $options = $this->adapter->load();
+            $options = $this->adapter->loadOptions();
             is_object($this->cache) ?? $this->cache->save('options',$options,2);
         }
         $this->data = $options;
@@ -79,7 +79,7 @@ class Options extends Collection
      * @param string|null $extension
      * @return boolean
     */
-    public function create($key, $value, $autoLoad = false, $extension = null)
+    public function createOption($key, $value, $autoLoad = false, $extension = null)
     {
         $result = $this->adapter->createOption($key,$value,$autoLoad,$extension);
         if ($result !== false) {
