@@ -10,14 +10,14 @@
 namespace Arikaim\Core\Options;
 
 use Arikaim\Core\Collection\Collection;
-use Arikaim\Core\Options\Adapter\Options as OptionsModel;
 use Arikaim\Core\Utils\Utils;
-use Arikaim\Core\Options\OptionsInterface;
+use Arikaim\Core\Interfaces\OptionsStorageInterface;
+use Arikaim\Core\Interfaces\OptionsInterface;
 
 /**
  * Options base class
  */
-class Options extends Collection
+class Options extends Collection implements OptionsInterface
 { 
     /**
      * Should reload options array
@@ -45,10 +45,10 @@ class Options extends Collection
      *
      * @param 
      */
-    public function __construct(OptionsInterface $adapter = null, $cache = null) 
+    public function __construct(OptionsStorageInterface $adapter, $cache = null) 
     {  
         $this->cache = $cache;
-        $this->adapter = ($adapter == null) ? new OptionsModel() : $adapter;
+        $this->adapter = $adapter;
         $this->needReload = true;
         
         parent::__construct([]);       
@@ -83,7 +83,7 @@ class Options extends Collection
     {
         $result = $this->adapter->createOption($key,$value,$autoLoad,$extension);
         if ($result !== false) {
-            $this->set($key,$value);
+            $this->data[$key] = $value;
         }
 
         return $result;
@@ -100,11 +100,13 @@ class Options extends Collection
      */
     public function set($key, $value, $autoLoad = false, $extension = null)
     {
-        $result = $this->adapter->set($key, $value, $autoLoad = false, $extension = null);
+        $result = $this->adapter->saveOption($key,$value,$autoLoad,$extension);
         if ($result !== false) {
             // clear options cache
-            is_object($this->cache) ?? $this->cache->delete('options');
-            $this->set($key,$value);
+            if (is_object($this->cache) == true) {
+                $this->cache->delete('options');
+            }
+            $this->data[$key] = $value;
         }
 
         return $result;
