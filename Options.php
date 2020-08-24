@@ -13,6 +13,7 @@ use Arikaim\Core\Collection\Collection;
 use Arikaim\Core\Utils\Utils;
 use Arikaim\Core\Interfaces\OptionsStorageInterface;
 use Arikaim\Core\Interfaces\OptionsInterface;
+use Arikaim\Core\Interfaces\CacheInterface;
 
 /**
  * Options base class
@@ -29,23 +30,24 @@ class Options extends Collection implements OptionsInterface
     /**
      * Storage adapter
      *
-     * @var OptionsInterface
+     * @var OptionsStorageInterface
      */
     protected $adapter;
 
     /**
      * Cache
      *
-     * @var Doctrine\Common\Cache\Cache
+     * @var CacheInterface
      */
     protected $cache;
 
     /**
-     * Constructor
-     *
-     * @param 
-     */
-    public function __construct(OptionsStorageInterface $adapter, $cache = null) 
+    * Constructor
+    *
+    * @param OptionsStorageInterface $adapter
+    * @param CacheInterface $cache
+    */
+    public function __construct(OptionsStorageInterface $adapter,CacheInterface $cache = null) 
     {  
         $this->cache = $cache;
         $this->adapter = $adapter;
@@ -61,10 +63,10 @@ class Options extends Collection implements OptionsInterface
      */
     public function load()
     {
-        $options = is_object($this->cache) ? $this->cache->fetch('options') : null;
-        if (is_array($options) == false) {        
+        $options = \is_object($this->cache) ? $this->cache->fetch('options') : null;
+        if (\is_array($options) == false) {        
             $options = $this->adapter->loadOptions();
-            is_object($this->cache) ?? $this->cache->save('options',$options,2);
+            \is_object($this->cache) ?? $this->cache->save('options',$options,2);
         }
     
         $this->data = $options;
@@ -104,7 +106,7 @@ class Options extends Collection implements OptionsInterface
         $result = $this->adapter->saveOption($key,$value,$autoLoad,$extension);
         if ($result !== false) {
             // clear options cache
-            if (is_object($this->cache) == true) {
+            if (\is_object($this->cache) == true) {
                 $this->cache->delete('options');
             }
             $this->data[$key] = $value;
@@ -141,7 +143,7 @@ class Options extends Collection implements OptionsInterface
             $this->data[$key] = $value;
         }
     
-        return (Utils::isJson($this->data[$key]) == true) ? json_decode($this->data[$key],true) : $this->data[$key];       
+        return (Utils::isJson($this->data[$key]) == true) ? \json_decode($this->data[$key],true) : $this->data[$key];       
     }
 
     /**
@@ -151,7 +153,7 @@ class Options extends Collection implements OptionsInterface
      * @param string|null $extension
      * @return bool
     */
-    public function remove($key = null, $extension = null)
+    public function removeOptions($key = null, $extension = null)
     {
         $result = $this->adapter->remove($key,$extension);
         if ($result !== false) {

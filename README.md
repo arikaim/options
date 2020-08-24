@@ -6,7 +6,7 @@ Persistent key-value map
   
   
 #### Requirements 
-  * PHP 7.1
+  * PHP 7.1, 7.2, 7.3
 
 
 #### Install
