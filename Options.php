@@ -146,6 +146,10 @@ class Options extends Collection implements OptionsInterface
 
         $value = (Utils::isJson($this->data[$key]) == true) ? \json_decode($this->data[$key],true) : $this->data[$key]; 
         
+        if (\is_numeric($value) == true) {
+            return $value;
+        }
+    
         return (Number::isBoolean($value) == true) ? Number::toBoolean($value) : $value;
     }
 
