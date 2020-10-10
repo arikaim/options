@@ -11,6 +11,7 @@ namespace Arikaim\Core\Options;
 
 use Arikaim\Core\Collection\Collection;
 use Arikaim\Core\Utils\Utils;
+use Arikaim\Core\Utils\Number;
 use Arikaim\Core\Interfaces\OptionsStorageInterface;
 use Arikaim\Core\Interfaces\OptionsInterface;
 use Arikaim\Core\Interfaces\CacheInterface;
@@ -142,8 +143,10 @@ class Options extends Collection implements OptionsInterface
             $value = $this->adapter->read($key,$default);
             $this->data[$key] = $value;
         }
-    
-        return (Utils::isJson($this->data[$key]) == true) ? \json_decode($this->data[$key],true) : $this->data[$key];       
+
+        $value = (Utils::isJson($this->data[$key]) == true) ? \json_decode($this->data[$key],true) : $this->data[$key]; 
+        
+        return (Number::isBoolean($value) == true) ? Number::toBoolean($value) : $value;
     }
 
     /**
@@ -172,5 +175,16 @@ class Options extends Collection implements OptionsInterface
     public function searchOptions($searchKey)
     {
         return $this->adapter->searchOptions($searchKey);
+    }
+
+    /**
+     * Get extension options
+     *
+     * @param string $extensioName
+     * @return mixed
+     */
+    public function getExtensionOptions($extensioName)
+    {
+        return $this->adapter->getExtensionOptions($extensioName);
     }
 }
