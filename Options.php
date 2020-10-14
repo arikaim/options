@@ -22,6 +22,13 @@ use Arikaim\Core\Interfaces\CacheInterface;
 class Options extends Collection implements OptionsInterface
 { 
     /**
+     * Save cache time
+     *
+     * @var integer
+     */
+    public static $cacheSaveTime = 2;
+
+    /**
      * Should reload options array
      *
      * @var boolean
@@ -48,12 +55,14 @@ class Options extends Collection implements OptionsInterface
     * @param OptionsStorageInterface $adapter
     * @param CacheInterface $cache
     */
-    public function __construct(OptionsStorageInterface $adapter,CacheInterface $cache = null) 
+    public function __construct(OptionsStorageInterface $adapter, CacheInterface $cache) 
     {  
         $this->cache = $cache;
         $this->adapter = $adapter;
         $this->needReload = true;
         
+        Self::$cacheSaveTime = \defined('CACHE_SAVE_TIME') ? \constant('CACHE_SAVE_TIME') : Self::$cacheSaveTime;
+
         parent::__construct([]);             
     }
 
@@ -64,10 +73,10 @@ class Options extends Collection implements OptionsInterface
      */
     public function load()
     {
-        $options = \is_object($this->cache) ? $this->cache->fetch('options') : null;
+        $options = $this->cache->fetch('options');
         if (\is_array($options) == false) {        
             $options = $this->adapter->loadOptions();
-            \is_object($this->cache) ?? $this->cache->save('options',$options,2);
+            $this->cache->save('options',$options,Self::$cacheSaveTime);
         }
     
         $this->data = $options;
@@ -106,10 +115,8 @@ class Options extends Collection implements OptionsInterface
     {
         $result = $this->adapter->saveOption($key,$value,$autoLoad,$extension);
         if ($result !== false) {
-            // clear options cache
-            if (\is_object($this->cache) == true) {
-                $this->cache->delete('options');
-            }
+            // clear options cache           
+            $this->cache->delete('options');        
             $this->data[$key] = $value;
         }
 
@@ -144,13 +151,17 @@ class Options extends Collection implements OptionsInterface
             $this->data[$key] = $value;
         }
 
-        $value = (Utils::isJson($this->data[$key]) == true) ? \json_decode($this->data[$key],true) : $this->data[$key]; 
-        
-        if (\is_numeric($value) == true) {
-            return $value;
+        $result = (empty($this->data[$key]) == true) ? $default : $this->data[$key];
+
+        if (\is_numeric($result) == true) {
+            return $result;
+        } elseif (Utils::isJson($result) == true) {
+            return \json_decode($result,true);
+        } elseif (Number::isBoolean($result) == true) {
+            return Number::toBoolean($result);
         }
-    
-        return (Number::isBoolean($value) == true) ? Number::toBoolean($value) : $value;
+          
+        return $result;
     }
 
     /**
@@ -174,11 +185,12 @@ class Options extends Collection implements OptionsInterface
      * Search options
      *
      * @param string $searchKey
+     * @param bool $compactKeys
      * @return array
      */
-    public function searchOptions($searchKey)
+    public function searchOptions($searchKey, $compactKeys = false)
     {
-        return $this->adapter->searchOptions($searchKey);
+        return $this->adapter->searchOptions($searchKey,$compactKeys);
     }
 
     /**
