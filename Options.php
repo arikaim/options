@@ -38,7 +38,7 @@ class Options extends Collection implements OptionsInterface
     /**
      * Storage adapter
      *
-     * @var OptionsStorageInterface
+     * @var OptionsStorageInterface|null
      */
     protected $adapter;
 
@@ -54,8 +54,9 @@ class Options extends Collection implements OptionsInterface
     *
     * @param OptionsStorageInterface $adapter
     * @param CacheInterface $cache
+    * @param bool $disabled
     */
-    public function __construct(OptionsStorageInterface $adapter, CacheInterface $cache) 
+    public function __construct(CacheInterface $cache, OptionsStorageInterface $adapter = null) 
     {  
         $this->cache = $cache;
         $this->adapter = $adapter;
@@ -75,7 +76,7 @@ class Options extends Collection implements OptionsInterface
     {
         $options = $this->cache->fetch('options');
         if (\is_array($options) == false) {        
-            $options = $this->adapter->loadOptions();
+            $options = (empty($this->adapter) == false) ? $this->adapter->loadOptions() : [];
             $this->cache->save('options',$options,Self::$cacheSaveTime);
         }
     
@@ -147,12 +148,16 @@ class Options extends Collection implements OptionsInterface
             $this->load();
         }
         if (isset($this->data[$key]) == false) {
-            $value = $this->adapter->read($key,$default);
+            $value = (empty($this->adapter) == false) ? $this->adapter->read($key,$default) : $default;
             $this->data[$key] = $value;
         }
 
-        $result = (empty($this->data[$key]) == true) ? $default : $this->data[$key];
-
+        if (empty($this->data[$key]) == true) {
+            return $default;
+        } else {
+            $result = $this->data[$key];
+        }
+        
         if (\is_numeric($result) == true) {
             return $result;
         } elseif (Utils::isJson($result) == true) {
