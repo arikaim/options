@@ -68,6 +68,17 @@ class Options extends Collection implements OptionsInterface
     }
 
     /**
+     * Set storage adapter
+     *
+     * @param OptionsStorageInterface $adapter
+     * @return void
+     */
+    public function setStorageAdapter(OptionsStorageInterface $adapter)
+    {
+        $this->adapter = $adapter;
+    }
+
+    /**
      * Store options in collection 
      *
      * @return void
