@@ -106,7 +106,7 @@ class Options extends Collection implements OptionsInterface
     */
     public function createOption($key, $value, $autoLoad = false, $extension = null)
     {
-        $result = $this->adapter->createOption($key,$value,$autoLoad,$extension);
+        $result = (empty($this->adapter) == false) ? $this->adapter->createOption($key,$value,$autoLoad,$extension) : false;
         if ($result !== false) {
             $this->data[$key] = $value;
         }
@@ -124,7 +124,7 @@ class Options extends Collection implements OptionsInterface
      */
     public function set($key, $value, $extension = null)
     {
-        $result = $this->adapter->saveOption($key,$value,$extension);
+        $result = (empty($this->adapter) == false) ? $this->adapter->saveOption($key,$value,$extension) : false;
         if ($result !== false) {
             // clear options cache           
             $this->cache->delete('options');        
@@ -142,7 +142,7 @@ class Options extends Collection implements OptionsInterface
     */
     public function has($key)
     {
-        return $this->adapter->hasOption($key);
+        return (empty($this->adapter) == false) ? $this->adapter->hasOption($key) : false;
     }
 
     /**
@@ -175,7 +175,7 @@ class Options extends Collection implements OptionsInterface
     */
     public function removeOptions($key = null, $extension = null)
     {
-        $result = $this->adapter->remove($key,$extension);
+        $result = (empty($this->adapter) == false) ? $this->adapter->remove($key,$extension) : false;
         $this->needReload = true;     
     
         return $result;
@@ -190,7 +190,7 @@ class Options extends Collection implements OptionsInterface
      */
     public function searchOptions($searchKey, $compactKeys = false)
     {
-        $options = $this->adapter->searchOptions($searchKey,$compactKeys);
+        $options = (empty($this->adapter) == false) ? $this->adapter->searchOptions($searchKey,$compactKeys) : [];
         
         return $this->resolveOptions($options);
     }
@@ -203,7 +203,7 @@ class Options extends Collection implements OptionsInterface
      */
     public function getExtensionOptions($extensioName)
     {
-        return $this->adapter->getExtensionOptions($extensioName);
+        return (empty($this->adapter) == false) ? $this->adapter->getExtensionOptions($extensioName) : [];
     }
 
     /**
