@@ -26,7 +26,7 @@ class Options extends Collection implements OptionsInterface
      *
      * @var integer
      */
-    public static $cacheSaveTime = 2;
+    public static $cacheSaveTime = 10;
 
     /**
      * Should reload options array
@@ -86,7 +86,7 @@ class Options extends Collection implements OptionsInterface
     public function load()
     {
         $options = $this->cache->fetch('options');
-        if (\is_array($options) == false) {        
+        if (empty($options) == true) {              
             $options = (empty($this->adapter) == false) ? $this->adapter->loadOptions() : [];
             $this->cache->save('options',$options,Self::$cacheSaveTime);
         }
@@ -118,14 +118,13 @@ class Options extends Collection implements OptionsInterface
      * Save option
      *
      * @param string $key
-     * @param mixed $value
-     * @param boolean $autoLoad
+     * @param mixed $value   
      * @param string $extension
      * @return bool
      */
-    public function set($key, $value, $autoLoad = false, $extension = null)
+    public function set($key, $value, $extension = null)
     {
-        $result = $this->adapter->saveOption($key,$value,$autoLoad,$extension);
+        $result = $this->adapter->saveOption($key,$value,$extension);
         if ($result !== false) {
             // clear options cache           
             $this->cache->delete('options');        
@@ -162,22 +161,9 @@ class Options extends Collection implements OptionsInterface
             $value = (empty($this->adapter) == false) ? $this->adapter->read($key,$default) : $default;
             $this->data[$key] = $value;
         }
-
-        if (empty($this->data[$key]) == true) {
-            return $default;
-        } else {
-            $result = $this->data[$key];
-        }
-        
-        if (\is_numeric($result) == true) {
-            return $result;
-        } elseif (Utils::isJson($result) == true) {
-            return \json_decode($result,true);
-        } elseif (Number::isBoolean($result) == true) {
-            return Number::toBoolean($result);
-        }
-          
-        return $result;
+        $result = $this->data[$key] ?? $default;
+              
+        return $this->resolveOptionType($result);
     }
 
     /**
@@ -190,10 +176,8 @@ class Options extends Collection implements OptionsInterface
     public function removeOptions($key = null, $extension = null)
     {
         $result = $this->adapter->remove($key,$extension);
-        if ($result !== false) {
-            $this->needReload = true;           
-        }
-
+        $this->needReload = true;     
+    
         return $result;
     }
 
@@ -206,7 +190,9 @@ class Options extends Collection implements OptionsInterface
      */
     public function searchOptions($searchKey, $compactKeys = false)
     {
-        return $this->adapter->searchOptions($searchKey,$compactKeys);
+        $options = $this->adapter->searchOptions($searchKey,$compactKeys);
+        
+        return $this->resolveOptions($options);
     }
 
     /**
@@ -219,4 +205,50 @@ class Options extends Collection implements OptionsInterface
     {
         return $this->adapter->getExtensionOptions($extensioName);
     }
+
+    /**
+     * Return collection array 
+     *
+     * @return array
+     */
+    public function toArray()
+    {
+        return $this->resolveOptions($this->data);
+    }
+
+    /**
+     * Resolve option type
+     *
+     * @param mixed $value
+     * @return mixed
+     */
+    protected function resolveOptionType($value)
+    {
+        if (\is_string($value) == true) {               
+            $value = (Utils::isJson($value) == true) ? \json_decode($value,true) : $value;
+        }
+        if (\is_array($value) == true) {
+            $value = $this->resolveOptions($value);
+        }
+        if (\is_string($value) == true) {               
+            $value = (Number::isBoolean($value) == true) ? (bool)Number::toBoolean($value) : $value;
+        }
+
+        return $value;
+    }
+
+    /**
+     * resolve options
+     *
+     * @param array $options
+     * @return array
+    */
+    protected function resolveOptions(array $options)
+    {
+        foreach($options as $key => $value) {
+            $options[$key] = $this->resolveOptionType($value);
+        }
+
+        return $options;
+    } 
 }
