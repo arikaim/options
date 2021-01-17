@@ -167,6 +167,21 @@ class Options extends Collection implements OptionsInterface
     }
 
     /**
+     * Force load option
+     *
+     * @param string $key
+     * @param mixed $default
+     * @return mixed
+     */
+    public function read(string $key, $default = null)
+    {
+        $value = $this->adapter->read($key,$default);
+        $this->data[$key] = $value;
+
+        return $value;
+    } 
+
+    /**
      * Remove option(s)
      *
      * @param string $key
