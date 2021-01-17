@@ -83,7 +83,7 @@ class Options extends Collection implements OptionsInterface
      *
      * @return void
      */
-    public function load()
+    public function load(): void
     {
         $options = $this->cache->fetch('options');
         if (empty($options) == true) {              
@@ -104,7 +104,7 @@ class Options extends Collection implements OptionsInterface
      * @param string|null $extension
      * @return boolean
     */
-    public function createOption($key, $value, $autoLoad = false, $extension = null)
+    public function createOption(string $key, $value, bool $autoLoad = false, ?string $extension = null): bool
     {
         $result = (empty($this->adapter) == false) ? $this->adapter->createOption($key,$value,$autoLoad,$extension) : false;
         if ($result !== false) {
@@ -119,10 +119,10 @@ class Options extends Collection implements OptionsInterface
      *
      * @param string $key
      * @param mixed $value   
-     * @param string $extension
+     * @param string|null $extension
      * @return bool
      */
-    public function set($key, $value, $extension = null)
+    public function set(string $key, $value, $extension = null)
     {
         $result = (empty($this->adapter) == false) ? $this->adapter->saveOption($key,$value,$extension) : false;
         if ($result !== false) {
@@ -140,7 +140,7 @@ class Options extends Collection implements OptionsInterface
      * @param string $key
      * @return boolean
     */
-    public function has($key)
+    public function has(string $key): bool
     {
         return (empty($this->adapter) == false) ? $this->adapter->hasOption($key) : false;
     }
@@ -152,7 +152,7 @@ class Options extends Collection implements OptionsInterface
      * @param mixed $default
      * @return mixed
     */
-    public function get($key, $default = null)
+    public function get(string $key, $default = null)
     {
         if ($this->needReload == true) {
             $this->load();
@@ -211,8 +211,11 @@ class Options extends Collection implements OptionsInterface
      *
      * @return array
      */
-    public function toArray()
+    public function toArray(): array
     {
+        if ($this->needReload == true) {
+            $this->load();
+        }
         return $this->resolveOptions($this->data);
     }
 
