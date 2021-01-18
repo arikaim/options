@@ -175,7 +175,7 @@ class Options extends Collection implements OptionsInterface
      */
     public function read(string $key, $default = null)
     {
-        $value = $this->adapter->read($key,$default);
+        $value = (empty($this->adapter) == false) ? $this->adapter->read($key,$default) : $default;
         $this->data[$key] = $value;
 
         return $value;
