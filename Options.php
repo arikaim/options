@@ -40,7 +40,7 @@ class Options extends Collection implements OptionsInterface
      *
      * @var OptionsStorageInterface|null
      */
-    protected $adapter;
+    protected $adapter = null;
 
     /**
      * Cache
@@ -52,11 +52,11 @@ class Options extends Collection implements OptionsInterface
     /**
     * Constructor
     *
-    * @param OptionsStorageInterface $adapter
+    * @param OptionsStorageInterface|null $adapter
     * @param CacheInterface $cache
     * @param bool $disabled
     */
-    public function __construct(CacheInterface $cache, OptionsStorageInterface $adapter = null) 
+    public function __construct(CacheInterface $cache, ?OptionsStorageInterface $adapter = null) 
     {  
         $this->cache = $cache;
         $this->adapter = $adapter;
@@ -70,10 +70,10 @@ class Options extends Collection implements OptionsInterface
     /**
      * Set storage adapter
      *
-     * @param OptionsStorageInterface $adapter
+     * @param OptionsStorageInterface|null $adapter
      * @return void
      */
-    public function setStorageAdapter(OptionsStorageInterface $adapter)
+    public function setStorageAdapter(?OptionsStorageInterface $adapter)
     {
         $this->adapter = $adapter;
     }
