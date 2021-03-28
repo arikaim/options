@@ -86,7 +86,7 @@ class Options extends Collection implements OptionsInterface
     public function load(): void
     {
         $options = $this->cache->fetch('options');
-        if (empty($options) == true) {              
+        if ($options === false) {              
             $options = (empty($this->adapter) == false) ? $this->adapter->loadOptions() : [];
             $this->cache->save('options',$options,Self::$cacheSaveTime);
         }
