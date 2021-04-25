@@ -62,8 +62,6 @@ class Options extends Collection implements OptionsInterface
         $this->adapter = $adapter;
         $this->needReload = true;
         
-        Self::$cacheSaveTime = \defined('CACHE_SAVE_TIME') ? \constant('CACHE_SAVE_TIME') : Self::$cacheSaveTime;
-
         parent::__construct([]);             
     }
 
