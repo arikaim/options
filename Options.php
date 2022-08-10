@@ -254,12 +254,12 @@ class Options extends Collection implements OptionsInterface
     }
 
     /**
-     * resolve options
+     * Resolve options
      *
      * @param array $options
      * @return array
     */
-    protected function resolveOptions(array $options)
+    protected function resolveOptions(array $options): array
     {
         foreach($options as $key => $value) {
             $options[$key] = $this->resolveOptionType($value);
