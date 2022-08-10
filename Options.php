@@ -38,9 +38,9 @@ class Options extends Collection implements OptionsInterface
     /**
      * Storage adapter
      *
-     * @var OptionsStorageInterface|null
+     * @var OptionsStorageInterface
      */
-    protected $adapter = null;
+    protected $adapter;
 
     /**
      * Cache
@@ -52,11 +52,11 @@ class Options extends Collection implements OptionsInterface
     /**
     * Constructor
     *
-    * @param OptionsStorageInterface|null $adapter
+    * @param OptionsStorageInterface $adapter
     * @param CacheInterface $cache
     * @param bool $disabled
     */
-    public function __construct(CacheInterface $cache, ?OptionsStorageInterface $adapter = null) 
+    public function __construct(CacheInterface $cache, OptionsStorageInterface $adapter) 
     {  
         $this->cache = $cache;
         $this->adapter = $adapter;
@@ -68,10 +68,10 @@ class Options extends Collection implements OptionsInterface
     /**
      * Set storage adapter
      *
-     * @param OptionsStorageInterface|null $adapter
+     * @param OptionsStorageInterface $adapter
      * @return void
      */
-    public function setStorageAdapter(?OptionsStorageInterface $adapter)
+    public function setStorageAdapter(OptionsStorageInterface $adapter)
     {
         $this->adapter = $adapter;
     }
@@ -85,7 +85,7 @@ class Options extends Collection implements OptionsInterface
     {
         $options = $this->cache->fetch('options');
         if ($options === false) {              
-            $options = (empty($this->adapter) == false) ? $this->adapter->loadOptions() : [];
+            $options = $this->adapter->loadOptions();
             $this->cache->save('options',$options,Self::$cacheSaveTime);
         }
     
@@ -104,7 +104,7 @@ class Options extends Collection implements OptionsInterface
     */
     public function createOption(string $key, $value, bool $autoLoad = false, ?string $extension = null): bool
     {
-        $result = (empty($this->adapter) == false) ? $this->adapter->createOption($key,$value,$autoLoad,$extension) : false;
+        $result = $this->adapter->createOption($key,$value,$autoLoad,$extension);
         if ($result !== false) {
             $this->data[$key] = $value;
         }
@@ -122,7 +122,7 @@ class Options extends Collection implements OptionsInterface
      */
     public function set(string $key, $value, $extension = null)
     {
-        $result = (empty($this->adapter) == false) ? $this->adapter->saveOption($key,$value,$extension) : false;
+        $result = $this->adapter->saveOption($key,$value,$extension);
         if ($result !== false) {
             // clear options cache           
             $this->cache->delete('options');        
@@ -140,7 +140,7 @@ class Options extends Collection implements OptionsInterface
     */
     public function has(string $key): bool
     {
-        return (empty($this->adapter) == false) ? $this->adapter->hasOption($key) : false;
+        return $this->adapter->hasOption($key);
     }
 
     /**
@@ -156,8 +156,7 @@ class Options extends Collection implements OptionsInterface
             $this->load();
         }
         if (isset($this->data[$key]) == false) {
-            $value = (empty($this->adapter) == false) ? $this->adapter->read($key,$default) : $default;
-            $this->data[$key] = $value;
+            $this->data[$key] = $this->adapter->read($key,$default);           
         }
         $result = $this->data[$key] ?? $default;
               
@@ -173,10 +172,9 @@ class Options extends Collection implements OptionsInterface
      */
     public function read(string $key, $default = null)
     {
-        $value = (empty($this->adapter) == false) ? $this->adapter->read($key,$default) : $default;
-        $this->data[$key] = $value;
+        $this->data[$key] = $this->adapter->read($key,$default);
 
-        return $value;
+        return $this->data[$key];
     } 
 
     /**
@@ -188,10 +186,9 @@ class Options extends Collection implements OptionsInterface
     */
     public function removeOptions($key = null, $extension = null)
     {
-        $result = (empty($this->adapter) == false) ? $this->adapter->remove($key,$extension) : false;
         $this->needReload = true;     
     
-        return $result;
+        return $this->adapter->remove($key,$extension);
     }
 
     /**
@@ -202,10 +199,8 @@ class Options extends Collection implements OptionsInterface
      * @return array
      */
     public function searchOptions($searchKey, $compactKeys = false)
-    {
-        $options = (empty($this->adapter) == false) ? $this->adapter->searchOptions($searchKey,$compactKeys) : [];
-        
-        return $this->resolveOptions($options);
+    { 
+        return $this->resolveOptions($this->adapter->searchOptions($searchKey,$compactKeys));
     }
 
     /**
@@ -216,7 +211,7 @@ class Options extends Collection implements OptionsInterface
      */
     public function getExtensionOptions($extensioName)
     {
-        return (empty($this->adapter) == false) ? $this->adapter->getExtensionOptions($extensioName) : [];
+        return $this->adapter->getExtensionOptions($extensioName);
     }
 
     /**
