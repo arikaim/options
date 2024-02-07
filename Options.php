@@ -144,6 +144,23 @@ class Options extends Collection implements OptionsInterface
     }
 
     /**
+     * Get text value
+     *
+     * @param string $key
+     * @param string|null $default
+     * @return string
+     */
+    public function getString(string $key, ?string $default = null): string
+    {
+        if ($this->needReload == true) {
+            $this->load();
+        }
+        $value = $this->data[$key] ?? $default ?? '';
+    
+        return (\trim($value) == '') ? ($default ?? '') : (string)$value;
+    }
+    
+    /**
      * Get option
      *
      * @param string $key
