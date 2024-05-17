@@ -14,7 +14,6 @@ use Arikaim\Core\Utils\Utils;
 use Arikaim\Core\Utils\Number;
 use Arikaim\Core\Interfaces\OptionsStorageInterface;
 use Arikaim\Core\Interfaces\OptionsInterface;
-use Arikaim\Core\Interfaces\CacheInterface;
 
 /**
  * Options base class
@@ -43,22 +42,13 @@ class Options extends Collection implements OptionsInterface
     protected $adapter;
 
     /**
-     * Cache
-     *
-     * @var CacheInterface
-     */
-    protected $cache;
-
-    /**
     * Constructor
     *
     * @param OptionsStorageInterface $adapter
-    * @param CacheInterface $cache
     * @param bool $disabled
     */
-    public function __construct(CacheInterface $cache, OptionsStorageInterface $adapter) 
+    public function __construct(OptionsStorageInterface $adapter) 
     {  
-        $this->cache = $cache;
         $this->adapter = $adapter;
         $this->needReload = true;
         
@@ -83,10 +73,12 @@ class Options extends Collection implements OptionsInterface
      */
     public function load(): void
     {
-        $options = $this->cache->fetch('options');
+        global $arikaim;
+
+        $options = $arikaim->get('cache')->fetch('options');
         if ($options === false) {              
             $options = $this->adapter->loadOptions();
-            $this->cache->save('options',$options,Self::$cacheSaveTime);
+            $arikaim->get('cache')->save('options',$options,Self::$cacheSaveTime);
         }
     
         $this->data = $options;
@@ -122,10 +114,12 @@ class Options extends Collection implements OptionsInterface
      */
     public function set(string $key, $value, $extension = null)
     {
+        global $arikaim;
+
         $result = $this->adapter->saveOption($key,$value,$extension);
         if ($result !== false) {
             // clear options cache           
-            $this->cache->delete('options');        
+            $arikaim->get('cache')->delete('options');        
             $this->data[$key] = $value;
         }
 
